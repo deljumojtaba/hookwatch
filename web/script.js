@@ -205,6 +205,9 @@ async function loadLogs() {
                         <strong>Method:</strong> ${log.method} | 
                         <strong>IP:</strong> ${log.ip_address} | 
                         <strong>Created:</strong> ${formatDate(log.created_at)}
+                        <button onclick="showReplayDialog('${log.id}', '${
+        log.method
+      }')" class="btn btn-info btn-sm">🔄 Replay</button>
                     </div>
                     <div class="data-sections">
                         <div class="data-section">
@@ -358,6 +361,78 @@ async function checkHealth() {
     showResult("healthResult", healthMessage, "success");
   } catch (error) {
     showResult("healthResult", `❌ Service is down: ${error.message}`, "error");
+  }
+}
+
+// Show replay dialog
+function showReplayDialog(webhookLogId, method) {
+  const targetUrl = prompt(
+    `Enter the target URL to replay this ${method} webhook:`,
+    "https://your-endpoint.com/webhook"
+  );
+
+  if (!targetUrl) {
+    return; // User cancelled
+  }
+
+  const timeout = prompt("Enter timeout in seconds (default: 30):", "30");
+  const timeoutValue = timeout ? parseInt(timeout) : 30;
+
+  if (isNaN(timeoutValue) || timeoutValue <= 0) {
+    alert("Invalid timeout value. Using default 30 seconds.");
+    timeoutValue = 30;
+  }
+
+  replayWebhook(webhookLogId, targetUrl, timeoutValue);
+}
+
+// Replay webhook to external endpoint
+async function replayWebhook(webhookLogId, targetUrl, timeout) {
+  try {
+    const result = await makeRequest(
+      `${API_BASE_URL}/webhooks/replay/${webhookLogId}`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          target_url: targetUrl,
+          timeout: timeout,
+        }),
+      }
+    );
+
+    const replayResult = result.result;
+    const statusIcon = replayResult.success ? "✅" : "❌";
+    const statusText = replayResult.success ? "Success" : "Failed";
+
+    const replayMessage = `
+      <h4>${statusIcon} Webhook Replayed!</h4>
+      <div class="meta">
+        <strong>Target URL:</strong> ${targetUrl}<br>
+        <strong>Status:</strong> ${statusText}<br>
+        <strong>Response Code:</strong> ${replayResult.status_code}<br>
+        <strong>Duration:</strong> ${replayResult.duration}<br>
+        <strong>Webhook ID:</strong> ${webhookLogId}
+      </div>
+      <div class="data">
+        <strong>Response Headers:</strong><br>
+        ${formatJSON(replayResult.headers)}<br><br>
+        <strong>Response Body:</strong><br>
+        ${replayResult.response_body || "No response body"}
+      </div>
+    `;
+
+    // Show result in a temporary alert or create a dedicated result area
+    alert(
+      `Webhook replay ${statusText.toLowerCase()}!\n\nStatus Code: ${
+        replayResult.status_code
+      }\nDuration: ${
+        replayResult.duration
+      }\n\nCheck the console for full details.`
+    );
+    console.log("Replay Result:", result);
+  } catch (error) {
+    alert(`❌ Replay failed: ${error.message}`);
+    console.error("Replay Error:", error);
   }
 }
 

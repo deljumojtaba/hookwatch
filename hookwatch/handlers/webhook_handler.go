@@ -150,3 +150,45 @@ func ClearWebhookLogs(c *gin.Context) {
 		"deletedCount": deletedCount,
 	})
 }
+
+func ReplayWebhook(c *gin.Context) {
+	webhookLogID := c.Param("webhookLogId")
+
+	if webhookLogID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Webhook log ID is required",
+		})
+		return
+	}
+
+	var replayRequest struct {
+		TargetURL string `json:"target_url" binding:"required"`
+		Timeout   int    `json:"timeout"`
+	}
+
+	if err := c.ShouldBindJSON(&replayRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Invalid request body",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	replayService := services.NewReplayService()
+	response, err := replayService.ReplayWebhookByID(webhookLogID, replayRequest.TargetURL, replayRequest.Timeout)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to replay webhook",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Webhook replayed successfully",
+		"webhook_log_id": webhookLogID,
+		"target_url":     replayRequest.TargetURL,
+		"result":         response,
+	})
+}

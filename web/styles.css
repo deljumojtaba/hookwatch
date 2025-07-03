@@ -222,6 +222,13 @@ header p {
     background: #c53030;
 }
 
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 11px;
+    margin-left: 8px;
+    min-height: auto;
+}
+
 .result {
     margin-top: 24px;
     padding: 20px;

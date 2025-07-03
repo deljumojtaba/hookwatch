@@ -33,6 +33,7 @@ func main() {
 	router.Any("/webhooks/:endpointId/receive", handlers.ReceiveWebhook)
 	router.GET("/webhooks/:endpointId/logs", handlers.GetWebhookLogs)
 	router.DELETE("/webhooks/:endpointId/logs", handlers.ClearWebhookLogs)
+	router.POST("/webhooks/replay/:webhookLogId", handlers.ReplayWebhook)
 
 	port := config.GetEnv("PORT", "3000")
 

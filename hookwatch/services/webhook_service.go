@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -134,6 +135,29 @@ func (s *WebhookService) GetWebhookLogs(endpointID string, limit int64) ([]model
 	}
 
 	return webhookLogs, nil
+}
+
+// GetWebhookLogByID retrieves a specific webhook log by its ID
+func (s *WebhookService) GetWebhookLogByID(webhookLogID string) (*models.WebhookLog, error) {
+	collection := db.Mongo.Collection("webhook_logs")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	objectID, err := primitive.ObjectIDFromHex(webhookLogID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid webhook log ID: %v", err)
+	}
+
+	filter := bson.M{"_id": objectID}
+
+	var webhookLog models.WebhookLog
+	err = collection.FindOne(ctx, filter).Decode(&webhookLog)
+	if err != nil {
+		return nil, fmt.Errorf("webhook log not found: %v", err)
+	}
+
+	return &webhookLog, nil
 }
 
 // ClearWebhookLogs deletes all webhook logs for an endpoint
