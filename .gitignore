@@ -1,1 +1,25 @@
+# Environment files
 *.env
+.env
+
+# Data directories
+data/
+.data/
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
