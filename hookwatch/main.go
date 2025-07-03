@@ -26,8 +26,11 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// Serve static files from the web directory
+	router.Static("/", "../web")
+
 	// Health check endpoint
-	router.GET("/", handlers.HealthCheck)
+	router.GET("/health", handlers.HealthCheck)
 
 	// Webhook endpoints - accept all HTTP methods
 	router.Any("/webhooks/:endpointId/receive", handlers.ReceiveWebhook)
