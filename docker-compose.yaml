@@ -26,3 +26,36 @@ services:
     networks:
       - main-network
     restart: unless-stopped
+
+  hookwatch:
+    build:
+      context: ./hookwatch
+      dockerfile: Dockerfile
+    container_name: hookwatch
+    restart: unless-stopped
+    ports:
+      - "${HOOKWATCH_PORT:-3000}:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017
+      - REDIS_URI=redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - main-network
+
+  web-ui:
+    image: nginx:alpine
+    container_name: web-ui
+    restart: unless-stopped
+    ports:
+      - "${WEB_UI_PORT:-8080}:80"
+    volumes:
+      - ./web:/usr/share/nginx/html
+    networks:
+      - main-network
+
+networks:
+  main-network:
+    driver: bridge

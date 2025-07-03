@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HookWatch - Webhook Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔗 HookWatch</h1>
+            <p>Webhook Monitoring Dashboard</p>
+        </header>
+
+        <!-- Brief Description -->
+        <section class="site-description">
+            <p>
+                <strong>HookWatch</strong> is a simple tool for testing, receiving, and monitoring webhooks.<br>
+                <ul>
+                  <li><strong>Send</strong> test webhooks to any endpoint ID with custom JSON data.</li>
+                  <li><strong>View</strong> a live log of all received webhooks, including headers and payloads.</li>
+                  <li><strong>Check</strong> the health status of the backend service.</li>
+                </ul>
+                Use this dashboard to debug, inspect, and verify webhook integrations in real time.<br>
+                <em>To get started: send a webhook, then view its log below!</em>
+            </p>
+            <div class="curl-example">
+                <strong>Webhook Endpoint:</strong><br>
+                <code>{METHOD} http://localhost:3000/webhooks/{endpointId}/receive</code><br><br>
+                <strong>Examples:</strong><br>
+                <code># POST with JSON body
+curl -X POST http://localhost:3000/webhooks/my-endpoint/receive \
+  -H "Content-Type: application/json" \
+  -d '{"event": "user.created", "data": {"id": 123}}'
+
+# GET with query parameters
+curl -X GET "http://localhost:3000/webhooks/my-endpoint/receive?event=user.created&id=123"
+
+# PUT with JSON body
+curl -X PUT http://localhost:3000/webhooks/my-endpoint/receive \
+  -H "Content-Type: application/json" \
+  -d '{"action": "update", "user_id": 456}'
+
+# DELETE request
+curl -X DELETE http://localhost:3000/webhooks/my-endpoint/receive</code>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <!-- Webhook Testing Section -->
+            <section class="card">
+                <h2>Test Webhook</h2>
+                <div class="form-group">
+                    <label for="endpointId">Endpoint ID:</label>
+                    <input type="text" id="endpointId" placeholder="my-endpoint" value="test-endpoint">
+                </div>
+                <div class="form-group">
+                    <label for="httpMethod">HTTP Method:</label>
+                    <select id="httpMethod" class="form-control">
+                        <option value="POST">POST</option>
+                        <option value="GET">GET</option>
+                        <option value="PUT">PUT</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="DELETE">DELETE</option>
+                    </select>
+                </div>
+                <div class="form-group" id="dataGroup">
+                    <label for="webhookData">Webhook Data (JSON):</label>
+                    <textarea id="webhookData" rows="8" placeholder='{"event": "user.created", "data": {"id": 123, "name": "John Doe"}}'>{
+  "event": "user.created",
+  "data": {
+    "id": 123,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "timestamp": "2024-01-15T10:30:00Z"
+  },
+  "source": "web-ui"
+}</textarea>
+                </div>
+                <button onclick="sendWebhook()" class="btn btn-primary">Send Webhook</button>
+                <div id="sendResult" class="result"></div>
+            </section>
+
+            <!-- Webhook Logs Section -->
+            <section class="card">
+                <h2>Webhook Logs</h2>
+                <div class="form-group">
+                    <label for="logsEndpointId">Endpoint ID:</label>
+                    <input type="text" id="logsEndpointId" placeholder="my-endpoint" value="test-endpoint">
+                    <button onclick="loadLogs()" class="btn btn-primary">Load Logs</button>
+                    <button onclick="clearLogs()" class="btn btn-danger">Clear Logs</button>
+                </div>
+                <div id="logsResult" class="result">
+                    <p class="placeholder">Click "Load Logs" to view webhook history</p>
+                </div>
+            </section>
+
+            <!-- Health Check Section -->
+            <section class="card">
+                <h2>Service Status</h2>
+                <button onclick="checkHealth()" class="btn btn-primary">Check Health</button>
+                <div id="healthResult" class="result">
+                    <p class="placeholder">Click "Check Health" to verify service status</p>
+                </div>
+            </section>
+
+            <!-- Endpoint ID Generator Section -->
+            <section class="card">
+                <h2>Endpoint ID Generator</h2>
+                <button onclick="generateEndpointId()" class="btn btn-primary">Generate Endpoint ID</button>
+                <div id="endpointIdResult" class="result">
+                    <p class="placeholder">Click "Generate Endpoint ID" to create a new endpoint ID</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 <a href="https://wolka.dev" target="_blank">Wolka.dev</a>. All rights reserved. | HookWatch Webhook Monitoring System</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 
