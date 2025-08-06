@@ -1,5 +1,5 @@
 // Configuration
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = window.location.protocol === "https:" ? "https://api.hookwatch.antcoders.dev" : "http://api.hookwatch.antcoders.dev";
 
 // Utility functions
 function showResult(elementId, content, type = "info") {
@@ -36,9 +36,7 @@ async function makeRequest(url, options = {}) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(
-        data.error || `HTTP ${response.status}: ${response.statusText}`
-      );
+      throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
     }
 
     return data;
@@ -92,11 +90,7 @@ async function sendWebhook() {
           requestOptions.url = `${API_BASE_URL}/webhooks/${endpointId}/receive`;
         }
       } catch (error) {
-        showResult(
-          "sendResult",
-          `Invalid JSON for query parameters: ${error.message}`,
-          "error"
-        );
+        showResult("sendResult", `Invalid JSON for query parameters: ${error.message}`, "error");
         return;
       }
     } else {
@@ -164,9 +158,7 @@ async function loadLogs() {
   showLoading("logsResult");
 
   try {
-    const result = await makeRequest(
-      `${API_BASE_URL}/webhooks/${endpointId}/logs?limit=20`
-    );
+    const result = await makeRequest(`${API_BASE_URL}/webhooks/${endpointId}/logs?limit=20`);
 
     // Check if logs array exists and has items
     if (!result.logs || result.logs.length === 0) {
@@ -205,9 +197,7 @@ async function loadLogs() {
                         <strong>Method:</strong> ${log.method} | 
                         <strong>IP:</strong> ${log.ip_address} | 
                         <strong>Created:</strong> ${formatDate(log.created_at)}
-                        <button onclick="showReplayDialog('${log.id}', '${
-        log.method
-      }')" class="btn btn-info btn-sm">🔄 Replay</button>
+                        <button onclick="showReplayDialog('${log.id}', '${log.method}')" class="btn btn-info btn-sm">🔄 Replay</button>
                     </div>
                     <div class="data-sections">
                         <div class="data-section">
@@ -249,9 +239,7 @@ async function clearLogs() {
   }
 
   // Show confirmation dialog
-  const confirmed = confirm(
-    `Are you sure you want to clear ALL webhook logs for endpoint "${endpointId}"?\n\nThis action cannot be undone.`
-  );
+  const confirmed = confirm(`Are you sure you want to clear ALL webhook logs for endpoint "${endpointId}"?\n\nThis action cannot be undone.`);
 
   if (!confirmed) {
     return;
@@ -260,12 +248,9 @@ async function clearLogs() {
   showLoading("logsResult");
 
   try {
-    const result = await makeRequest(
-      `${API_BASE_URL}/webhooks/${endpointId}/logs`,
-      {
-        method: "DELETE",
-      }
-    );
+    const result = await makeRequest(`${API_BASE_URL}/webhooks/${endpointId}/logs`, {
+      method: "DELETE",
+    });
 
     const successMessage = `
       <h4>🗑️ Webhook logs cleared successfully!</h4>
@@ -343,7 +328,7 @@ async function checkHealth() {
   showLoading("healthResult");
 
   try {
-    const result = await makeRequest(`${API_BASE_URL}/`);
+    const result = await makeRequest(`${API_BASE_URL}/health`);
 
     const healthMessage = `
             <h4>✅ Service is healthy!</h4>
@@ -366,10 +351,7 @@ async function checkHealth() {
 
 // Show replay dialog
 function showReplayDialog(webhookLogId, method) {
-  const targetUrl = prompt(
-    `Enter the target URL to replay this ${method} webhook:`,
-    "https://your-endpoint.com/webhook"
-  );
+  const targetUrl = prompt(`Enter the target URL to replay this ${method} webhook:`, "https://your-endpoint.com/webhook");
 
   if (!targetUrl) {
     return; // User cancelled
@@ -389,16 +371,13 @@ function showReplayDialog(webhookLogId, method) {
 // Replay webhook to external endpoint
 async function replayWebhook(webhookLogId, targetUrl, timeout) {
   try {
-    const result = await makeRequest(
-      `${API_BASE_URL}/webhooks/replay/${webhookLogId}`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          target_url: targetUrl,
-          timeout: timeout,
-        }),
-      }
-    );
+    const result = await makeRequest(`${API_BASE_URL}/webhooks/replay/${webhookLogId}`, {
+      method: "POST",
+      body: JSON.stringify({
+        target_url: targetUrl,
+        timeout: timeout,
+      }),
+    });
 
     const replayResult = result.result;
     const statusIcon = replayResult.success ? "✅" : "❌";
@@ -423,9 +402,7 @@ async function replayWebhook(webhookLogId, targetUrl, timeout) {
 
     // Show result in a temporary alert or create a dedicated result area
     alert(
-      `Webhook replay ${statusText.toLowerCase()}!\n\nStatus Code: ${
-        replayResult.status_code
-      }\nDuration: ${
+      `Webhook replay ${statusText.toLowerCase()}!\n\nStatus Code: ${replayResult.status_code}\nDuration: ${
         replayResult.duration
       }\n\nCheck the console for full details.`
     );
