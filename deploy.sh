@@ -125,9 +125,21 @@ fi
 
 echo "✅ Files updated successfully!"
 echo ""
+
+# Check which docker compose command is available
+if command -v docker-compose &> /dev/null; then
+    COMPOSE_CMD="docker-compose"
+elif docker compose version &> /dev/null 2>&1; then
+    COMPOSE_CMD="docker compose"
+else
+    echo "❌ Docker Compose not found! Please install it first:"
+    echo "sudo apt update && sudo apt install docker-compose -y"
+    exit 1
+fi
+
 echo "🔄 Now run:"
-echo "docker-compose down"
-echo "docker-compose up -d --build"
+echo "$COMPOSE_CMD down"
+echo "$COMPOSE_CMD up -d --build"
 echo ""
 echo "🌐 Your services will be available at:"
 echo "• Web UI: https://hookwatch.antcoders.dev"
