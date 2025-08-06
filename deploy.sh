@@ -91,9 +91,9 @@ volumes:
     driver: local
 EOF
 
-# Update web/script.js with correct API URL
+# Update web/script.js with correct API URL (HTTP first, then HTTPS)
 echo "📝 Updating API URL in script.js..."
-sed -i 's|const API_BASE_URL = "http://localhost:3000";|const API_BASE_URL = window.location.protocol === "https:" ? "https://api.hookwatch.antcoders.dev" : "http://api.hookwatch.antcoders.dev";|g' web/script.js
+sed -i 's|const API_BASE_URL = "http://localhost:3000";|const API_BASE_URL = "http://api.hookwatch.antcoders.dev";|g' web/script.js
 
 # Create .env if it doesn't exist
 if [ ! -f .env ]; then
@@ -137,18 +137,36 @@ else
     exit 1
 fi
 
-echo "🔄 Now run:"
-echo "$COMPOSE_CMD down"
-echo "$COMPOSE_CMD up -d --build"
+echo "🔄 Starting deployment..."
+
+# Stop existing containers
+echo "⏹️ Stopping existing containers..."
+$COMPOSE_CMD down
+
+# Build and start services
+echo "🚀 Building and starting services..."
+$COMPOSE_CMD up -d --build
+
+# Wait for services to start
+echo "⏱️ Waiting for services to start..."
+sleep 10
+
+# Check status
+echo "📊 Checking service status..."
+$COMPOSE_CMD ps
+
 echo ""
-echo "🌐 Your services will be available at:"
-echo "• Web UI: https://hookwatch.antcoders.dev"
-echo "• API: https://api.hookwatch.antcoders.dev"
+echo "🌐 Your services should be available at:"
+echo "• Web UI: http://hookwatch.antcoders.dev (HTTP first, HTTPS will be ready in 2-3 minutes)"
+echo "• API: http://api.hookwatch.antcoders.dev (HTTP first, HTTPS will be ready in 2-3 minutes)"
+echo ""
+echo "🔍 Test commands:"
+echo "curl http://api.hookwatch.antcoders.dev/health"
+echo "curl http://hookwatch.antcoders.dev"
 echo ""
 echo "🗄️ Database Access:"
 echo "• MongoDB: mongodb://admin:SecurePassword123!@localhost:27017"
 echo "• Redis: redis://localhost:6379"
 echo ""
-echo "📊 Database Management Tools:"
-echo "• MongoDB Compass: mongodb://admin:SecurePassword123!@YOUR_SERVER_IP:27017"
-echo "• Redis CLI: redis-cli -h YOUR_SERVER_IP -p 6379"
+echo "⏰ SSL certificates will be generated automatically by Let's Encrypt in 2-3 minutes."
+echo "📋 Check certificate generation: docker logs nginx-letsencrypt -f"

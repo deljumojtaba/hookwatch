@@ -21,10 +21,13 @@ func main() {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // Allow all origins for production
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization", "X-Forwarded-Proto", "X-Real-IP"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: false, // Set to false when allowing all origins
 	}))
+
+	// Trust proxy headers
+	router.SetTrustedProxies([]string{"172.0.0.0/8", "10.0.0.0/8", "192.168.0.0/16"})
 
 	// API routes FIRST (before static files)
 	// Health check endpoint
@@ -36,8 +39,13 @@ func main() {
 	router.DELETE("/webhooks/:endpointId/logs", handlers.ClearWebhookLogs)
 	router.POST("/webhooks/replay/:webhookLogId", handlers.ReplayWebhook)
 
-	// Static files LAST (wildcard route)
-	router.Static("/", "../web")
+	// Serve web UI under /ui path to avoid conflicts
+	router.Static("/ui", "../web")
+
+	// Redirect root to /ui
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(302, "/ui/")
+	})
 
 	port := config.GetEnv("PORT", "3000")
 
